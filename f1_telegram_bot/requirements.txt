@@ -1,0 +1,4 @@
+pyTelegramBotAPI
+catboost
+requests
+environs
