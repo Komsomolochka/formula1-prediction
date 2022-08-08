@@ -6,7 +6,7 @@
 ### What does the bot do?
 
 - List of upcoming races of the current season
-- Information about the date, time of the events of the race weekend
+- Schedule of the race weekend
 - Weather forecast for the selected weekend
 - Prediction of qualifying and race results
 
