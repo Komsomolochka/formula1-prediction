@@ -218,7 +218,7 @@ races['sprint_p1'] = races['sprint_p1'].fillna(0)
 """get weather for racing date"""
 
 for index, row in races.iterrows():
-  url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key=H6GND588FW74NLWNW6P95HV83&contentType=json'.format(row['lat'],row['long'],row['date'])
+  url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key={YOUR_KEY}&contentType=json'.format(row['lat'],row['long'],row['date'])
   r = requests.get(url)
   json = r.json()
   for item in json['days']:

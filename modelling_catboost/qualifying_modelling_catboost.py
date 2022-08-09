@@ -114,7 +114,7 @@ qualifying = pd.merge(qualifying, drivers, right_on=['driver'], left_on=['pole_p
 """get weather for qualifying date"""
 
 for index, row in qualifying.iterrows():
-  url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key=UHADRGQA7EE52B4HAATFN5A2Q&contentType=json'.format(row['lat'],row['long'],row['q_date'])
+  url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key={YOUR_KEY}&contentType=json'.format(row['lat'],row['long'],row['q_date'])
   r = requests.get(url)
   json = r.json()
   for item in json['days']:

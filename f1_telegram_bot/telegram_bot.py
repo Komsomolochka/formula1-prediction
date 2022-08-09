@@ -53,7 +53,7 @@ def convert_time(z_time):
     return time + ":" + str_time[1]
 
 def get_weather(lat, long, date):
-    w_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key=H6GND588FW74NLWNW6P95HV83&contentType=json'.format(lat, long, date)
+    w_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key={YOUR_KEY}&contentType=json'.format(lat, long, date)
     w_r = requests.get(w_url)
     return w_r.json()
 
