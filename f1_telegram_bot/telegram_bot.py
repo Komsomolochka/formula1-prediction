@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import telebot
-import requests
-import shutil
-import subprocess
-import os.path
+import logging
+import os
 from telebot import types
 import pickle
 from datetime import datetime
@@ -12,7 +10,6 @@ import requests
 import json
 import collections
 import numpy as np
-import catboost
 from catboost import CatBoostClassifier
 from environs import Env
 
@@ -21,11 +18,12 @@ env = Env()
 env.read_env()
 
 API_TOKEN = env.str("TELEGRAM_BOT_TOKEN")
+WEATHER_API_KEY = env.str("WEATHER_API_KEY")
 bot = telebot.TeleBot(API_TOKEN, parse_mode="Markdown")
 
-datetime.now().strftime('%Y-%m-%d')
-year = datetime.now().strftime('%Y')
-today = datetime.now().strftime('%Y-%m-%d')
+now = datetime.now()
+year = now.strftime('%Y')
+today = now.strftime('%Y-%m-%d')
 
 url = 'https://ergast.com/api/f1/{}.json'.format(year)
 r = requests.get(url)
@@ -53,7 +51,7 @@ def convert_time(z_time):
     return time + ":" + str_time[1]
 
 def get_weather(lat, long, date):
-    w_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key={YOUR_KEY}&contentType=json'.format(lat, long, date)
+    w_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}%2C{}/{}?unitGroup=metric&elements=temp%2Cwindspeed%2Cconditions&include=days&key={YOUR_KEY}&contentType=json'.format(lat, long, date, YOUR_KEY=WEATHER_API_KEY)
     w_r = requests.get(w_url)
     return w_r.json()
 
@@ -115,26 +113,32 @@ def feel_x_r(r_weather, X_r, call_data, q_p1, q_p2, q_p3):
 
 @bot.message_handler(commands=["start"])
 def default_test(message):
-
+    logging.info(
+        "Start msg - Author: %s",
+        message.chat,
+    )
+    today = datetime.now().strftime('%Y-%m-%d')
     keyboard = types.InlineKeyboardMarkup()
     for i, race in enumerate(races):
-      if race['date'] >= today:
-        keyboard.add(types.InlineKeyboardButton(text=race['raceName'], callback_data=str(i)))
+        if race['date'] >= today:
+            keyboard.add(types.InlineKeyboardButton(text=race['raceName'], callback_data=str(i)))
     bot.send_message(message.chat.id, "Choose a race:", reply_markup=keyboard)
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
 
     call_data = int(call.data)
-    name = races[int(call.data)]['Circuit']['circuitName']
-    country = races[int(call.data)]['Circuit']['Location']['country']
-    city = races[int(call.data)]['Circuit']['Location']['locality']
-    q_date = races[int(call.data)]['Qualifying']['date']
-    q_time = races[int(call.data)]['Qualifying']['time']
-    r_date = races[int(call.data)]['date']
-    r_time = races[int(call.data)]['time']
-    lat = races[int(call.data)]['Circuit']['Location']['lat']
-    long = races[int(call.data)]['Circuit']['Location']['long']
+    race = races[call_data]
+    name = race['Circuit']['circuitName']
+    country = race['Circuit']['Location']['country']
+    city = race['Circuit']['Location']['locality']
+    q_date = race['Qualifying']['date']
+    q_time = race['Qualifying']['time']
+    r_date = race['date']
+    r_time = race['time']
+    lat = race['Circuit']['Location']['lat']
+    long = race['Circuit']['Location']['long']
     q_weather = get_weather(lat, long, q_date)
     r_weather = get_weather(lat, long, r_date)
     q_conditions = q_weather['days'][0]['conditions']
@@ -190,4 +194,13 @@ def callback_inline(call):
 
 
 if __name__ == "__main__":
-    bot.polling()
+    filename = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        "f1_bot.log",
+    )
+    logging.basicConfig(
+        filename=filename,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.INFO
+    )
+    bot.infinity_polling()
